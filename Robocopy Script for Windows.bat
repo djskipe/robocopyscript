@@ -34,14 +34,14 @@ echo:       ______________________________________________________________
 
 
 :MENU
-echo MENU PRINCIPALE:
+echo                       MENU PRINCIPALE:
 echo:
-echo 1. Copia locale (da cartella a cartella)
-echo 2. Copia su disco di rete (con montaggio unita)
-echo 3. Configura Backup Programmato
-echo 4. Visualizza Backup Programmati
-echo 5. Elimina Backup Programmato
-echo 6. Esci
+echo            1. Copia locale (da cartella a cartella)
+echo            2. Copia su disco di rete (con montaggio unita)
+echo            3. Configura Backup Programmato
+echo            4. Visualizza Backup Programmati
+echo            5. Elimina Backup Programmato
+echo            6. Esci
 echo:
 set /p scelta="Seleziona un'opzione (1-6): "
 
