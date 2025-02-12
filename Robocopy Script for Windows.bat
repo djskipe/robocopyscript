@@ -1,8 +1,8 @@
 @echo off
-:: Verifica privilegi di amministratore e richiesta elevazione
+:: Check for admin privileges and request elevation
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
-    echo Richiesta dei privilegi di amministratore...
+    echo Requesting administrator privileges...
     goto UACPrompt
 ) else ( goto gotAdmin )
 
@@ -19,7 +19,257 @@ if '%errorlevel%' NEQ '0' (
 setlocal enabledelayedexpansion
 cls
 
+:LANGUAGE_SELECT
+echo:       ______________________________________________________________
+echo:
+echo:                   DJ SKIPE ROBOCOPY SCRIPT v1.1
+echo:
+echo:                Select your language / Seleziona la lingua:
+echo:                1. English
+echo:                2. Italiano
+echo:       ______________________________________________________________
+echo:
+set /p lang_choice="Select a language (1-2): "
 
+if "%lang_choice%"=="1" goto ENGLISH_MENU
+if "%lang_choice%"=="2" goto ITALIAN_MENU
+goto LANGUAGE_SELECT
+
+:ENGLISH_MENU
+cls
+echo:       ______________________________________________________________
+echo:
+echo:                   DJ SKIPE ROBOCOPY SCRIPT v1.1
+echo:
+echo:                   Advanced Backup and Synchronization
+echo:                   Time Selection and Detailed Options
+echo:
+echo:                   Developer: dj skipe
+echo:
+echo:               GitHub: https://github.com/djskipe
+echo:       ______________________________________________________________
+
+echo                       MAIN MENU:
+echo:
+echo            1. Local copy (folder to folder)
+echo            2. Network drive copy (with drive mapping)
+echo            3. Configure Scheduled Backup
+echo            4. View Scheduled Backups
+echo            5. Delete Scheduled Backup
+echo            6. Exit
+echo:
+set /p choice="Select an option (1-6): "
+
+if "%choice%"=="1" goto ENGLISH_LOCAL_COPY
+if "%choice%"=="2" goto ENGLISH_NETWORK_COPY
+if "%choice%"=="3" goto ENGLISH_CONFIGURE_BACKUP
+if "%choice%"=="4" goto ENGLISH_VIEW_BACKUP
+if "%choice%"=="5" goto ENGLISH_DELETE_BACKUP
+if "%choice%"=="6" exit
+goto ENGLISH_MENU
+
+:ENGLISH_LOCAL_COPY
+echo:
+set /p source="Enter source folder path (e.g. C:\Users\Desktop): "
+set /p destination="Enter destination folder path: "
+
+echo:
+echo File comparison and replacement options:
+echo 1. Copy only new or modified files
+echo 2. Always replace existing files
+echo 3. Compare by size, date, and attributes
+echo 4. Copy only if files are different
+echo:
+set /p comparison="Choose an option (1-4): "
+
+echo:
+echo Confirm these paths?
+echo Source: %source%
+echo Destination: %destination%
+set /p confirm="(Y/N): "
+if /i not "%confirm%"=="Y" goto ENGLISH_LOCAL_COPY
+
+if "%comparison%"=="1" (
+    robocopy "%source%" "%destination%" /E /ZB /r:3 /w:10 /xc /xn /log:"%temp%\robocopy_log.txt"
+)
+if "%comparison%"=="2" (
+    robocopy "%source%" "%destination%" /E /ZB /r:3 /w:10 /xc /xn /mir /log:"%temp%\robocopy_log.txt"
+)
+if "%comparison%"=="3" (
+    robocopy "%source%" "%destination%" /E /ZB /r:3 /w:10 /xc /xn /is /it /log:"%temp%\robocopy_log.txt"
+)
+if "%comparison%"=="4" (
+    robocopy "%source%" "%destination%" /E /ZB /r:3 /w:10 /xc /xn /xx /log:"%temp%\robocopy_log.txt"
+)
+
+echo:
+echo Copy completed! Log saved in %temp%\robocopy_log.txt
+pause
+goto ENGLISH_MENU
+
+:ENGLISH_NETWORK_COPY
+echo:
+set /p drive_letter="Enter network drive letter (e.g. X): "
+set /p network_path="Enter network path (e.g. \\server\share): "
+set /p auth="Does the share require username and password? (Y/N): "
+
+if /i "%auth%"=="Y" (
+    set /p username="Enter username: "
+    set /p password="Enter password: "
+    net use %drive_letter%: "%network_path%" /user:%username% %password%
+) else (
+    net use %drive_letter%: "%network_path%"
+)
+
+if errorlevel 1 (
+    echo Error connecting to network drive!
+    pause
+    goto ENGLISH_MENU
+)
+
+echo:
+echo Network drive successfully mounted as %drive_letter%:
+echo:
+set /p source="Enter source folder path: "
+set /p destination="Enter path on network drive (e.g. %drive_letter%:\MyFolder): "
+
+echo:
+echo File comparison and replacement options:
+echo 1. Copy only new or modified files
+echo 2. Always replace existing files
+echo 3. Compare by size, date, and attributes
+echo 4. Copy only if files are different
+echo:
+set /p comparison="Choose an option (1-4): "
+
+echo:
+echo Confirm these paths?
+echo Source: %source%
+echo Destination: %destination%
+set /p confirm="(Y/N): "
+if /i not "%confirm%"=="Y" goto ENGLISH_NETWORK_COPY
+
+if "%comparison%"=="1" (
+    robocopy "%source%" "%destination%" /E /ZB /r:3 /w:10 /xc /xn /log:"%temp%\robocopy_network_log.txt"
+)
+if "%comparison%"=="2" (
+    robocopy "%source%" "%destination%" /E /ZB /r:3 /w:10 /xc /xn /mir /log:"%temp%\robocopy_network_log.txt"
+)
+if "%comparison%"=="3" (
+    robocopy "%source%" "%destination%" /E /ZB /r:3 /w:10 /xc /xn /is /it /log:"%temp%\robocopy_network_log.txt"
+)
+if "%comparison%"=="4" (
+    robocopy "%source%" "%destination%" /E /ZB /r:3 /w:10 /xc /xn /xx /log:"%temp%\robocopy_network_log.txt"
+)
+
+echo:
+echo Copy completed! Log saved in %temp%\robocopy_network_log.txt
+
+echo:
+set /p disconnect="Do you want to disconnect the network drive? (Y/N): "
+if /i "%disconnect%"=="Y" net use %drive_letter%: /delete
+
+pause
+goto ENGLISH_MENU
+
+:ENGLISH_CONFIGURE_BACKUP
+echo:
+echo SCHEDULED BACKUP CONFIGURATION
+echo:
+set /p backup_name="Enter a name for this backup (no spaces): "
+set /p source="Enter source folder path: "
+set /p destination="Enter destination folder path: "
+
+echo:
+echo File comparison and replacement options:
+echo 1. Copy only new or modified files
+echo 2. Always replace existing files
+echo 3. Compare by size, date, and attributes
+echo 4. Copy only if files are different
+echo:
+set /p comparison="Choose an option (1-4): "
+
+echo:
+echo Select backup frequency:
+echo 1. Daily
+echo 2. Weekly
+echo 3. Monthly
+echo 4. Specific days
+echo:
+set /p frequency="Choose an option (1-4): "
+
+:ENGLISH_TIME_SELECTION
+echo:
+echo BACKUP TIME SELECTION
+echo:
+echo Choose how to set the time:
+echo 1. Specific time (HH:MM)
+echo 2. Multiple times per day
+echo 3. Time interval
+echo:
+set /p time_choice="Select an option (1-3): "
+
+if "%time_choice%"=="1" (
+    set /p time="Enter time (HH:MM format, 24h): "
+    set "times=%time%"
+)
+
+if "%time_choice%"=="2" (
+    set "times="
+    :ENGLISH_ADD_TIMES
+    set /p new_time="Enter time (HH:MM, 24h) or press ENTER to finish: "
+    if "!new_time!"=="" goto ENGLISH_END_TIMES
+    set "times=!times! !new_time!"
+    goto ENGLISH_ADD_TIMES
+    :ENGLISH_END_TIMES
+)
+
+if "%time_choice%"=="3" (
+    set /p start_time="Enter start time (HH:MM, 24h): "
+    set /p end_time="Enter end time (HH:MM, 24h): "
+    set /p interval="Enter interval in minutes: "
+    
+    call :GENERATE_INTERVALS "!start_time!" "!end_time!" !interval!
+)
+
+if "%frequency%"=="1" set "backup_type=/mo daily"
+if "%frequency%"=="2" set "backup_type=/mo weekly /d *"
+if "%frequency%"=="3" set "backup_type=/mo monthly /d 1"
+if "%frequency%"=="4" (
+    echo Enter days (MON, TUE, WED, THU, FRI, SAT, SUN separated by comma):
+    set /p specific_days="Days: "
+    set "backup_type=/mo weekly /d !specific_days!"
+)
+
+if "%comparison%"=="1" set "comparison_options=/E /ZB /r:3 /w:10 /xc /xn"
+if "%comparison%"=="2" set "comparison_options=/E /ZB /r:3 /w:10 /xc /xn /mir"
+if "%comparison%"=="3" set "comparison_options=/E /ZB /r:3 /w:10 /xc /xn /is /it"
+if "%comparison%"=="4" set "comparison_options=/E /ZB /r:3 /w:10 /xc /xn /xx"
+
+for %%t in (%times%) do (
+    schtasks /create /tn "Backup_%backup_name%_%%t" /tr "robocopy \""%source%\"" \""%destination%\"" !comparison_options! /log:\"%temp%\backup_%backup_name%_%%t_log.txt\"" /sc weekly %backup_type% /st %%t
+)
+
+echo Scheduled backup created successfully!
+echo Logs will be saved in %temp%
+pause
+goto ENGLISH_MENU
+
+:ENGLISH_VIEW_BACKUP
+schtasks /query /fo list /v | findstr /C:"Backup_"
+pause
+goto ENGLISH_MENU
+
+:ENGLISH_DELETE_BACKUP
+echo:
+set /p backup_name="Enter the name of the backup to delete: "
+schtasks /delete /tn "Backup_%backup_name%" /f
+echo Backup deleted!
+pause
+goto ENGLISH_MENU
+
+:ITALIAN_MENU
+cls
 echo:       ______________________________________________________________
 echo:
 echo:                   DJ SKIPE ROBOCOPY SCRIPT v1.0
@@ -32,8 +282,6 @@ echo:
 echo:               GitHub: https://github.com/djskipe
 echo:       ______________________________________________________________
 
-
-:MENU
 echo                       MENU PRINCIPALE:
 echo:
 echo            1. Copia locale (da cartella a cartella)
@@ -51,7 +299,7 @@ if "%scelta%"=="3" goto CONFIGURA_BACKUP
 if "%scelta%"=="4" goto VISUALIZZA_BACKUP
 if "%scelta%"=="5" goto ELIMINA_BACKUP
 if "%scelta%"=="6" exit
-goto MENU
+goto ITALIAN_MENU
 
 :COPIA_LOCALE
 echo:
@@ -74,7 +322,6 @@ echo Destinazione: %destinazione%
 set /p conferma="(S/N): "
 if /i not "%conferma%"=="S" goto COPIA_LOCALE
 
-:: Opzioni Robocopy per diversi tipi di confronto
 if "%confronto%"=="1" (
     robocopy "%origine%" "%destinazione%" /E /ZB /r:3 /w:10 /xc /xn /log:"%temp%\robocopy_log.txt"
 )
@@ -91,7 +338,7 @@ if "%confronto%"=="4" (
 echo:
 echo Copia completata! Log salvato in %temp%\robocopy_log.txt
 pause
-goto MENU
+goto ITALIAN_MENU
 
 :COPIA_RETE
 echo:
@@ -110,7 +357,7 @@ if /i "%auth%"=="S" (
 if errorlevel 1 (
     echo Errore nella connessione al disco di rete!
     pause
-    goto MENU
+    goto ITALIAN_MENU
 )
 
 echo:
@@ -135,7 +382,6 @@ echo Destinazione: %destinazione%
 set /p conferma="(S/N): "
 if /i not "%conferma%"=="S" goto COPIA_RETE
 
-:: Opzioni Robocopy per diversi tipi di confronto
 if "%confronto%"=="1" (
     robocopy "%origine%" "%destinazione%" /E /ZB /r:3 /w:10 /xc /xn /log:"%temp%\robocopy_network_log.txt"
 )
@@ -157,7 +403,7 @@ set /p disconnetti="Vuoi disconnettere il disco di rete? (S/N): "
 if /i "%disconnetti%"=="S" net use %lettere%: /delete
 
 pause
-goto MENU
+goto ITALIAN_MENU
 
 :CONFIGURA_BACKUP
 echo:
@@ -216,7 +462,6 @@ if "%scelta_orario%"=="3" (
     set /p ora_fine="Inserisci ora fine (HH:MM, 24h): "
     set /p intervallo="Inserisci intervallo in minuti: "
     
-    :: Genera orari tra ora_inizio e ora_fine
     call :GENERA_INTERVALLI "!ora_inizio!" "!ora_fine!" !intervallo!
 )
 
@@ -229,13 +474,11 @@ if "%frequenza%"=="4" (
     set "tipo_backup=/mo weekly /d !giorni_specifici!"
 )
 
-:: Opzioni Robocopy per diversi tipi di confronto
 if "%confronto%"=="1" set "opzioni_confronto=/E /ZB /r:3 /w:10 /xc /xn"
 if "%confronto%"=="2" set "opzioni_confronto=/E /ZB /r:3 /w:10 /xc /xn /mir"
 if "%confronto%"=="3" set "opzioni_confronto=/E /ZB /r:3 /w:10 /xc /xn /is /it"
 if "%confronto%"=="4" set "opzioni_confronto=/E /ZB /r:3 /w:10 /xc /xn /xx"
 
-:: Creazione task con orari multipli
 for %%o in (%orari%) do (
     schtasks /create /tn "Backup_%nome_backup%_%%o" /tr "robocopy \""%origine%\"" \""%destinazione%\"" !opzioni_confronto! /log:\"%temp%\backup_%nome_backup%_%%o_log.txt\"" /sc weekly %tipo_backup% /st %%o
 )
@@ -243,12 +486,12 @@ for %%o in (%orari%) do (
 echo Backup programmato creato con successo!
 echo Log dei backup saranno salvati in %temp%
 pause
-goto MENU
+goto ITALIAN_MENU
 
 :VISUALIZZA_BACKUP
 schtasks /query /fo list /v | findstr /C:"Backup_"
 pause
-goto MENU
+goto ITALIAN_MENU
 
 :ELIMINA_BACKUP
 echo:
@@ -256,7 +499,7 @@ set /p nome_backup="Inserisci il nome del backup da eliminare: "
 schtasks /delete /tn "Backup_%nome_backup%" /f
 echo Backup eliminato!
 pause
-goto MENU
+goto ITALIAN_MENU
 
 :GENERA_INTERVALLI
 setlocal
@@ -286,4 +529,34 @@ if %current_min% LEQ %end_min% (
 )
 
 endlocal & set "orari=%orari%"
+exit /b
+
+:GENERATE_INTERVALS
+setlocal
+set "start=%~1"
+set "end=%~2"
+set "step=%~3"
+
+:: Convert hours to minutes
+for /f "tokens=1,2 delims=:" %%a in ("%start%") do (
+    set /a start_min=(%%a*60)+%%b
+)
+for /f "tokens=1,2 delims=:" %%a in ("%end%") do (
+    set /a end_min=(%%a*60)+%%b
+)
+
+set "times="
+set /a current_min=start_min
+:INTERVAL_LOOP
+if %current_min% LEQ %end_min% (
+    set /a hours=current_min/60
+    set /a minutes=current_min%%60
+    if !hours! LSS 10 set "hours=0!hours!"
+    if !minutes! LSS 10 set "minutes=0!minutes!"
+    set "times=!times! !hours!:!minutes!"
+    set /a current_min+=step
+    goto INTERVAL_LOOP
+)
+
+endlocal & set "times=%times%"
 exit /b
